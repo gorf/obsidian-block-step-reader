@@ -27,6 +27,14 @@ if ($pending) {
 $branch = (git branch --show-current).Trim()
 if (-not $branch) { $branch = "master" }
 
+if ((git rev-parse --is-shallow-repository).Trim() -eq "true") {
+    if ((@(git remote) -contains "upstream")) {
+        git fetch upstream --unshallow
+    } else {
+        git fetch --unshallow
+    }
+}
+
 $remotes = @(git remote)
 if ($remotes -notcontains "origin") {
     if ($Visibility -eq "private") {
@@ -38,16 +46,19 @@ if ($remotes -notcontains "origin") {
     git push -u origin $branch
 }
 
-$tag = "v0.2.1"
-gh release view $tag *> $null
+$user = gh api user -q .login
+$repo = "$user/$RepoName"
+$tag = "v0.2.1-maintenance"
+
+gh release view $tag -R $repo *> $null
 if ($LASTEXITCODE -eq 0) {
-    gh release upload $tag main.js manifest.json --clobber
+    gh release upload $tag main.js manifest.json --clobber -R $repo
 } else {
-    gh release create $tag main.js manifest.json --title "0.2.1" --notes "Maintenance release with prebuilt main.js for manual install and BRAT."
+    gh api "repos/$repo/releases" -X POST -f tag_name=$tag -f name="0.2.1" -f body="Maintenance release with prebuilt main.js for manual install and BRAT." | Out-Null
+    gh release upload $tag main.js manifest.json --clobber -R $repo
 }
 
-$user = gh api user -q .login
 Write-Host ""
-Write-Host "Repository: https://github.com/$user/$RepoName"
-Write-Host "Release:    https://github.com/$user/$RepoName/releases/tag/$tag"
-Write-Host "BRAT URL:   https://github.com/$user/$RepoName"
+Write-Host "Repository: https://github.com/$repo"
+Write-Host "Release:    https://github.com/$repo/releases/tag/$tag"
+Write-Host "BRAT URL:   https://github.com/$repo"
