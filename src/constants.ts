@@ -54,3 +54,9 @@ export const COLLAPSE_INDICATORS = [".collapse-indicator", ".callout-fold"];
  * Class name for collapsed block
  */
 export const IS_COLLAPSED = "is-collapsed";
+
+/** Sidebar reading library view type */
+export const READING_LIBRARY_VIEW_TYPE = "bsr-reading-library";
+
+/** Support link shown in settings and manifest (Ko-fi) */
+export const SUPPORT_KOFI_URL = "https://ko-fi.com/bigmonk";

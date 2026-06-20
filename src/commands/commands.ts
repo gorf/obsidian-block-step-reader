@@ -5,19 +5,15 @@ import {
 	isReadingView,
 } from "src/utils";
 import { Platform } from "obsidian";
+import { t } from "src/i18n";
+import { activateReadingLibrary } from "src/reading-library";
 import type { RveCommand } from ".";
 
-/**
- * Rerender all reading views
- *
- * @param plugin Plugin instance
- * @returns Rerender all reading views command
- */
 export const rerenderAllReadingViews: RveCommand = (
-	plugin: ReadingViewEnhancer
+	plugin: ReadingViewEnhancer,
 ) => ({
 	id: "rerender-all-reading-views",
-	name: "Rerender all reading views",
+	name: t(plugin, "cmd.rerender"),
 	callback: () => {
 		const { workspace } = plugin.app;
 		workspace.getLeavesOfType("markdown").forEach((leaf) => {
@@ -29,28 +25,19 @@ export const rerenderAllReadingViews: RveCommand = (
 	},
 });
 
-/**
- * Select top block in the view
- *
- * @param plugin Plugin instance
- * @returns Select top block in the view command
- */
 export const selectTopBlockInTheView: RveCommand = (
-	plugin: ReadingViewEnhancer
+	plugin: ReadingViewEnhancer,
 ) => ({
 	id: "select-top-block-in-the-view",
-	name: "Select Top Block in the View",
+	name: t(plugin, "cmd.selectTopBlock"),
 	checkCallback: (checking: boolean): boolean => {
 		const activeView = getActiveView(plugin);
-		// If checking is set to true, perform a preliminary check.
 		if (checking) {
 			if (!isReadingView(activeView)) return false;
 			else if (isNotEnabled(plugin)) return false;
 			else if (isMobileAndDisabled(plugin)) return false;
 			else return true;
-		}
-		// If checking is set to false, perform an action.
-		else {
+		} else {
 			const container = getReadingViewContainer(activeView);
 			if (container) {
 				plugin.blockSelector.selectTopBlockInTheView(container);
@@ -63,24 +50,32 @@ export const selectTopBlockInTheView: RveCommand = (
 
 export const saveReadingPosition: RveCommand = (plugin: ReadingViewEnhancer) => ({
 	id: "save-reading-position",
-	name: "Save reading position",
+	name: t(plugin, "cmd.savePosition"),
 	checkCallback: (checking: boolean): boolean => {
 		const activeView = getActiveView(plugin);
 		if (checking) {
-			return isReadingView(activeView) && !isNotEnabled(plugin) && !isMobileAndDisabled(plugin);
+			return (
+				isReadingView(activeView) &&
+				!isNotEnabled(plugin) &&
+				!isMobileAndDisabled(plugin)
+			);
 		}
-		plugin.readingPosition.saveNow();
+		void plugin.readingPosition.saveNow();
 		return true;
 	},
 });
 
 export const restoreReadingPosition: RveCommand = (plugin: ReadingViewEnhancer) => ({
 	id: "restore-reading-position",
-	name: "Restore reading position",
+	name: t(plugin, "cmd.restorePosition"),
 	checkCallback: (checking: boolean): boolean => {
 		const activeView = getActiveView(plugin);
 		if (checking) {
-			return isReadingView(activeView) && !isNotEnabled(plugin) && !isMobileAndDisabled(plugin);
+			return (
+				isReadingView(activeView) &&
+				!isNotEnabled(plugin) &&
+				!isMobileAndDisabled(plugin)
+			);
 		}
 		plugin.readingPosition.restoreNow(plugin.blockSelector.selectionHandler);
 		return true;
@@ -89,28 +84,59 @@ export const restoreReadingPosition: RveCommand = (plugin: ReadingViewEnhancer) 
 
 export const clearReadingPositions: RveCommand = (plugin: ReadingViewEnhancer) => ({
 	id: "clear-reading-positions",
-	name: "Clear all reading positions",
+	name: t(plugin, "cmd.clearPositions"),
 	callback: () => {
 		plugin.readingPosition.clearAll();
 	},
 });
 
-export const toggleBlockHighlight: RveCommand = (
-	plugin: ReadingViewEnhancer
-) => ({
-	id: "toggle-block-highlight",
-	name: "Toggle Block Highlight",
+export const markNoteAsRead: RveCommand = (plugin: ReadingViewEnhancer) => ({
+	id: "mark-note-as-read",
+	name: t(plugin, "cmd.markRead"),
 	checkCallback: (checking: boolean): boolean => {
 		const activeView = getActiveView(plugin);
-		// If checking is set to true, perform a preliminary check.
+		if (checking) {
+			return (
+				isReadingView(activeView) &&
+				!isNotEnabled(plugin) &&
+				!isMobileAndDisabled(plugin)
+			);
+		}
+		void plugin.readingPosition.markCurrentAsRead();
+		return true;
+	},
+});
+
+export const markNoteAsUnread: RveCommand = (plugin: ReadingViewEnhancer) => ({
+	id: "mark-note-as-unread",
+	name: t(plugin, "cmd.markUnread"),
+	checkCallback: (checking: boolean): boolean => {
+		const activeView = getActiveView(plugin);
+		if (checking) {
+			return (
+				isReadingView(activeView) &&
+				!isNotEnabled(plugin) &&
+				!isMobileAndDisabled(plugin)
+			);
+		}
+		void plugin.readingPosition.markCurrentAsUnread();
+		return true;
+	},
+});
+
+export const toggleBlockHighlight: RveCommand = (
+	plugin: ReadingViewEnhancer,
+) => ({
+	id: "toggle-block-highlight",
+	name: t(plugin, "cmd.toggleHighlight"),
+	checkCallback: (checking: boolean): boolean => {
+		const activeView = getActiveView(plugin);
 		if (checking) {
 			if (!isReadingView(activeView)) return false;
 			else if (isNotEnabled(plugin)) return false;
 			else if (isMobileAndDisabled(plugin)) return false;
 			else return true;
-		}
-		// If checking is set to false, perform an action.
-		else {
+		} else {
 			const container = getReadingViewContainer(activeView);
 			if (container) {
 				plugin.blockSelector.toggleBlockHighlight();
@@ -118,6 +144,22 @@ export const toggleBlockHighlight: RveCommand = (
 
 			return true;
 		}
+	},
+});
+
+export const openReadingLibrary: RveCommand = (plugin: ReadingViewEnhancer) => ({
+	id: "open-reading-library",
+	name: t(plugin, "cmd.openLibrary"),
+	callback: () => {
+		void activateReadingLibrary(plugin);
+	},
+});
+
+export const focusReadingLibrary: RveCommand = (plugin: ReadingViewEnhancer) => ({
+	id: "focus-reading-library",
+	name: t(plugin, "cmd.focusLibrary"),
+	callback: () => {
+		void activateReadingLibrary(plugin);
 	},
 });
 

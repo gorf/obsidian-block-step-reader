@@ -1,13 +1,12 @@
 import { Setting, ToggleComponent } from "obsidian";
+import { t } from "src/i18n";
 import ReadingViewEnhancer from "src/main";
 
 export default class RememberReadingPositionSetting extends Setting {
 	constructor(settingsTabEl: HTMLElement, plugin: ReadingViewEnhancer) {
 		super(settingsTabEl);
-		this.setName("Remember reading position")
-			.setDesc(
-				"Save the current block and scroll position while reading, then restore it when you reopen the note.",
-			)
+		this.setName(t(plugin, "settings.rememberPosition"))
+			.setDesc(t(plugin, "settings.rememberPositionDesc"))
 			.addToggle((toggle) => {
 				toggle
 					.setValue(plugin.settings.rememberReadingPosition)
@@ -18,8 +17,8 @@ export default class RememberReadingPositionSetting extends Setting {
 			});
 
 		new Setting(settingsTabEl)
-			.setName("Show restore notice")
-			.setDesc("Display a notice when a saved reading position is restored.")
+			.setName(t(plugin, "settings.showRestoreNotice"))
+			.setDesc(t(plugin, "settings.showRestoreNoticeDesc"))
 			.addToggle((toggle: ToggleComponent) => {
 				toggle
 					.setValue(plugin.settings.showRestoreNotice)
@@ -30,10 +29,8 @@ export default class RememberReadingPositionSetting extends Setting {
 			});
 
 		new Setting(settingsTabEl)
-			.setName("Save delay (ms)")
-			.setDesc(
-				"How long to wait after you stop navigating or scrolling before saving the position.",
-			)
+			.setName(t(plugin, "settings.saveDelay"))
+			.setDesc(t(plugin, "settings.saveDelayDesc"))
 			.addText((text) => {
 				text
 					.setPlaceholder("500")
@@ -49,10 +46,8 @@ export default class RememberReadingPositionSetting extends Setting {
 			});
 
 		new Setting(settingsTabEl)
-			.setName("Restore delay (ms)")
-			.setDesc(
-				"Wait briefly after opening a note so blocks are ready before restoring position.",
-			)
+			.setName(t(plugin, "settings.restoreDelay"))
+			.setDesc(t(plugin, "settings.restoreDelayDesc"))
 			.addText((text) => {
 				text
 					.setPlaceholder("300")

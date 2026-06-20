@@ -159,12 +159,192 @@ export class ScrollableCodeRule extends StyleRule {
 	}
 }
 
+export class ReadingProgressBarRule extends StyleRule {
+	constructor() {
+		const template = `
+			.bsr-progress-bar {
+				position: sticky;
+				bottom: 0;
+				z-index: 10;
+				margin-top: 1rem;
+				padding: 0.5rem 0.75rem 0.75rem;
+				border-top: 1px solid var(--background-modifier-border);
+				background: color-mix(in srgb, var(--background-primary) 92%, transparent);
+				backdrop-filter: blur(6px);
+			}
+
+			.bsr-progress-bar-hidden {
+				display: none;
+			}
+
+			.bsr-progress-track {
+				height: 4px;
+				border-radius: 999px;
+				background: var(--background-modifier-border);
+				overflow: hidden;
+			}
+
+			.bsr-progress-fill {
+				height: 100%;
+				width: 0;
+				border-radius: 999px;
+				background: var(--interactive-accent);
+				transition: width 0.2s ease;
+			}
+
+			.bsr-progress-label {
+				margin-top: 0.35rem;
+				font-size: 0.8rem;
+				color: var(--text-muted);
+				text-align: center;
+			}
+		`;
+		super(template, (template: string) => template);
+		this.isActive = true;
+	}
+}
+
+export class ReadingLibraryRule extends StyleRule {
+	constructor() {
+		const template = `
+			.bsr-library-view {
+				display: flex;
+				flex-direction: column;
+				height: 100%;
+				padding: 0.75rem;
+				gap: 0.75rem;
+			}
+
+			.bsr-library-toolbar {
+				display: flex;
+				flex-direction: column;
+				gap: 0.5rem;
+			}
+
+			.bsr-library-filters {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.35rem;
+			}
+
+			.bsr-library-filter {
+				border: 1px solid var(--background-modifier-border);
+				background: var(--background-secondary);
+				color: var(--text-muted);
+				border-radius: 999px;
+				padding: 0.2rem 0.65rem;
+				font-size: 0.75rem;
+				cursor: pointer;
+			}
+
+			.bsr-library-filter.is-active {
+				background: var(--interactive-accent);
+				border-color: var(--interactive-accent);
+				color: var(--text-on-accent);
+			}
+
+			.bsr-library-controls {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.5rem;
+				align-items: center;
+			}
+
+			.bsr-library-search {
+				flex: 1 1 120px;
+				min-width: 120px;
+			}
+
+			.bsr-library-list {
+				display: flex;
+				flex-direction: column;
+				gap: 0.5rem;
+				overflow: auto;
+				flex: 1 1 auto;
+			}
+
+			.bsr-library-empty {
+				color: var(--text-muted);
+				font-size: 0.85rem;
+				padding: 1rem 0.25rem;
+			}
+
+			.bsr-library-item {
+				border: 1px solid var(--background-modifier-border);
+				border-radius: 0.65rem;
+				padding: 0.65rem 0.75rem;
+				cursor: pointer;
+				background: var(--background-primary);
+			}
+
+			.bsr-library-item:hover {
+				border-color: var(--interactive-accent);
+			}
+
+			.bsr-library-item-main {
+				display: flex;
+				flex-direction: column;
+				gap: 0.15rem;
+			}
+
+			.bsr-library-item-title {
+				font-weight: 600;
+				font-size: 0.9rem;
+			}
+
+			.bsr-library-item-path {
+				font-size: 0.72rem;
+				color: var(--text-faint);
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+
+			.bsr-library-item-meta {
+				display: flex;
+				align-items: center;
+				gap: 0.5rem;
+				margin-top: 0.45rem;
+			}
+
+			.bsr-library-item-progress-text {
+				font-size: 0.75rem;
+				color: var(--text-muted);
+				min-width: 2.5rem;
+			}
+
+			.bsr-library-item-track {
+				flex: 1 1 auto;
+				height: 4px;
+				border-radius: 999px;
+				background: var(--background-modifier-border);
+				overflow: hidden;
+			}
+
+			.bsr-library-item-fill {
+				height: 100%;
+				background: var(--interactive-accent);
+			}
+
+			.bsr-library-item-subtitle {
+				margin-top: 0.35rem;
+				font-size: 0.75rem;
+				color: var(--text-muted);
+			}
+		`;
+		super(template, (template: string) => template);
+		this.isActive = true;
+	}
+}
+
 type RuleKey =
 	| "block-color"
 	| "collapse-indicator-always-on"
 	| "collapse-indicator-on-the-right-side"
 	| "align-checkbox-to-indentation-guide"
-	| "scrollable-code";
+	| "scrollable-code"
+	| "reading-progress-bar"
+	| "reading-library";
 
 /**
  * The class that manages all style rules.
@@ -186,6 +366,8 @@ export default class RveStyles {
 			"align-checkbox-to-indentation-guide":
 				new AlignCheckboxToIndentationGuide(),
 			"scrollable-code": new ScrollableCodeRule(),
+			"reading-progress-bar": new ReadingProgressBarRule(),
+			"reading-library": new ReadingLibraryRule(),
 		};
 	}
 

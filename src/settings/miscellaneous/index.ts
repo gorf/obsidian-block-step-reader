@@ -5,6 +5,7 @@ import CollapseIndicatorsOnTheRightSideSetting from "./collapse-indicators-on-th
 import CheckboxAlignWithIndentationGuideSetting from "./checkbox-align-with-indentation-guide";
 import ScrollableCodeSetting from "./scrollable-code";
 import RememberReadingPositionSetting from "./remember-reading-position";
+import ReadingExperienceSettings from "./reading-experience";
 
 /**
  * Registers settings components not related to block.
@@ -15,6 +16,7 @@ export default class MiscellaneousSettings {
 		new AlwaysOnCollapseIndicatorSetting(containerEl, plugin);
 		new ScrollableCodeSetting(containerEl, plugin);
 		new RememberReadingPositionSetting(containerEl, plugin);
+		new ReadingExperienceSettings(containerEl, plugin);
 		new AutoSelectTopBlockSetting(containerEl, plugin);
 		new CollapseIndicatorsOnTheRightSideSetting(containerEl, plugin);
 		new CheckboxAlignWithIndentationGuideSetting(containerEl, plugin);

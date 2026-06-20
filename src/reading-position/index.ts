@@ -1,38 +1,77 @@
-import { Notice } from "obsidian";
+import { Notice, TFile } from "obsidian";
+import { t } from "src/i18n";
 import ReadingViewEnhancer from "src/main";
 import SelectionHandler from "src/block-selector/selection-handler";
 import { BLOCK_ATTR } from "src/constants";
+import {
+	buildPositionPatch,
+	buildReadingStats,
+	getFileReadingUnitsAsync,
+	markAsRead,
+	markAsUnread,
+	readUserStateFromCache,
+	writeUserState,
+	type ReadingStats,
+	type UserReadingState,
+} from "src/reading-state";
+import ReadingProgressBar from "src/reading-ui/progress-bar";
 import { getActiveView, getReadingViewContainer, isReadingView } from "src/utils";
 import type { ReadingPosition, ReadingPositionStore } from "./types";
-
-const MAX_STORED_POSITIONS = 500;
 
 export default class ReadingPositionManager {
 	private plugin: ReadingViewEnhancer;
 	private saveTimer: number | null = null;
 	private scrollListener: ((event: Event) => void) | null = null;
 	private boundContainer: HTMLElement | null = null;
+	private progressBar: ReadingProgressBar;
+	private statsCache = new Map<string, ReadingStats>();
+	private totalWordsCache = new Map<string, number>();
+	private restoring = false;
 
 	constructor(plugin: ReadingViewEnhancer) {
 		this.plugin = plugin;
+		this.progressBar = new ReadingProgressBar(plugin);
 	}
 
 	activate() {
+		this.progressBar.activate();
+
 		this.plugin.registerEvent(
 			this.plugin.app.workspace.on("layout-change", () => {
 				this.attachScrollListener();
+				this.refreshProgressForActiveFile();
 			}),
 		);
 		this.plugin.registerEvent(
 			this.plugin.app.workspace.on("active-leaf-change", () => {
 				this.attachScrollListener();
+				this.refreshProgressForActiveFile();
+			}),
+		);
+		this.plugin.registerEvent(
+			this.plugin.app.metadataCache.on("changed", (file) => {
+				this.refreshProgressForFile(file);
 			}),
 		);
 	}
 
-	onBlockSelected(block: HTMLElement, container: HTMLElement) {
-		if (!this.plugin.settings.rememberReadingPosition) return;
+	onBlockSelected(
+		block: HTMLElement,
+		container: HTMLElement,
+		options?: { center?: boolean },
+	) {
+		if (options?.center && this.plugin.settings.autoCenterBlock) {
+			scrollBlockToCenter(block);
+		}
+
+		if (!this.plugin.settings.rememberReadingPosition) {
+			this.updateProgressUi(block, container);
+			return;
+		}
+
 		this.queueSave(container, block);
+		this.updateProgressUi(block, container);
+		this.maybeAutoMarkRead(block, container);
 	}
 
 	tryRestore(
@@ -45,68 +84,130 @@ export default class ReadingPositionManager {
 		const file = view?.file;
 		if (!file || !isReadingView(view)) return false;
 
-		const position = this.plugin.readingPositions[file.path];
-		if (!position) return false;
+		const state = this.resolveReadingState(file);
+		if (!state) return false;
 
-		const block = this.findBlockByLine(container, position.lineStart);
+		this.restoring = true;
+
+		const block = this.findBlockByLine(container, state.lineStart);
 		if (block) {
-			selectionHandler.select(block);
-			this.restoreScroll(container, position.scrollRatio);
+			selectionHandler.select(block, { center: false });
+			this.restoreScroll(container, state.scrollRatio);
 		} else {
-			this.restoreScroll(container, position.scrollRatio);
+			this.restoreScroll(container, state.scrollRatio);
 		}
 
+		this.restoring = false;
+		this.updateProgressFromState(file, state);
+
 		if (this.plugin.settings.showRestoreNotice) {
-			new Notice("已恢复上次阅读位置");
+			new Notice(t(this.plugin, "notice.restored"));
 		}
 
 		return true;
 	}
 
-	saveNow() {
+	async saveNow() {
 		const view = getActiveView(this.plugin);
 		const container = getReadingViewContainer(view);
 		const block = this.plugin.blockSelector.selectionHandler.selectedBlock;
 		if (!view?.file || !container) return;
 
-		this.persistPosition(view.file.path, container, block);
-		new Notice("已保存阅读位置");
+		await this.persistPosition(view.file, container, block);
+		new Notice(t(this.plugin, "notice.saved"));
 	}
 
-	restoreNow(selectionHandler: SelectionHandler) {
+	async restoreNow(selectionHandler: SelectionHandler) {
 		const view = getActiveView(this.plugin);
 		const container = getReadingViewContainer(view);
 		if (!container) return;
 
 		if (this.tryRestore(container, selectionHandler)) return;
-		new Notice("没有可恢复的阅读位置");
+		new Notice(t(this.plugin, "notice.noPosition"));
+	}
+
+	async markCurrentAsRead() {
+		const view = getActiveView(this.plugin);
+		const file = view?.file;
+		if (!file || !isReadingView(view)) return;
+
+		const totalWords = await this.getTotalWords(file);
+		await markAsRead(this.plugin, file, totalWords);
+		this.refreshProgressForFile(file);
+		new Notice(t(this.plugin, "notice.markedRead"));
+	}
+
+	async markCurrentAsUnread() {
+		const view = getActiveView(this.plugin);
+		const file = view?.file;
+		if (!file || !isReadingView(view)) return;
+
+		await markAsUnread(this.plugin, file);
+		this.refreshProgressForFile(file);
+		new Notice(t(this.plugin, "notice.markedUnread"));
 	}
 
 	clearAll() {
 		this.plugin.readingPositions = {};
 		this.plugin.savePluginData();
-		new Notice("已清除所有阅读位置记录");
+		new Notice(t(this.plugin, "notice.clearedLegacy"));
 	}
 
 	hasSavedPosition(filePath: string | undefined): boolean {
 		if (!filePath) return false;
-		return Boolean(this.plugin.readingPositions[filePath]);
+		const file = this.plugin.app.vault.getAbstractFileByPath(filePath);
+		if (!(file instanceof TFile)) {
+			return Boolean(this.plugin.readingPositions[filePath]);
+		}
+		return Boolean(readUserStateFromCache(this.plugin, file));
+	}
+
+	getCachedStats(filePath: string): ReadingStats | null {
+		return this.statsCache.get(filePath) ?? null;
+	}
+
+	private resolveReadingState(file: TFile): UserReadingState | null {
+		const fromFrontmatter = readUserStateFromCache(this.plugin, file);
+		if (fromFrontmatter) return fromFrontmatter;
+
+		const legacy = this.plugin.readingPositions[file.path];
+		if (!legacy) return null;
+
+		return {
+			progress: 0,
+			lineStart: legacy.lineStart,
+			scrollRatio: legacy.scrollRatio,
+			updatedAt: legacy.updatedAt,
+			read: false,
+			finished: null,
+			totalWords: 0,
+			wordsRead: 0,
+		};
 	}
 
 	private queueSave(container: HTMLElement, block: HTMLElement | null) {
 		if (this.saveTimer) window.clearTimeout(this.saveTimer);
 
 		this.saveTimer = window.setTimeout(() => {
-			const view = getActiveView(this.plugin);
-			const file = view?.file;
-			if (!file) return;
-
-			this.persistPosition(file.path, container, block);
+			void this.flushSave(container, block);
 		}, this.plugin.settings.readingPositionSaveDelayMs);
 	}
 
-	private persistPosition(
-		filePath: string,
+	private async flushSave(
+		container: HTMLElement,
+		block: HTMLElement | null,
+	) {
+		const view = getActiveView(this.plugin);
+		const file = view?.file;
+		if (!file) return;
+
+		const currentBlock =
+			this.plugin.blockSelector.selectionHandler.selectedBlock ?? block;
+		await this.persistPosition(file, container, currentBlock);
+	}
+
+	private async persistPosition(
+		file: TFile,
 		container: HTMLElement,
 		block: HTMLElement | null,
 	) {
@@ -115,27 +216,126 @@ export default class ReadingPositionManager {
 
 		const scrollable = getScrollableElement(container);
 		const scrollRatio = scrollable ? getScrollRatio(scrollable) : 0;
-
-		this.plugin.readingPositions[filePath] = {
+		const view = getActiveView(this.plugin);
+		const totalLines = view?.editor.lineCount() ?? 1;
+		const totalWords = await this.getTotalWords(file);
+		const patch = buildPositionPatch(
 			lineStart,
 			scrollRatio,
-			updatedAt: Date.now(),
-		};
+			totalLines,
+			totalWords,
+		);
 
-		this.trimStore();
-		this.plugin.savePluginData();
+		await writeUserState(this.plugin, file, patch);
+
+		delete this.plugin.readingPositions[file.path];
+		await this.plugin.savePluginData();
+
+		const state = readUserStateFromCache(this.plugin, file);
+		if (state) this.updateProgressFromState(file, state);
 	}
 
-	private trimStore() {
-		const entries = Object.entries(this.plugin.readingPositions);
-		if (entries.length <= MAX_STORED_POSITIONS) return;
+	private async getTotalWords(file: TFile): Promise<number> {
+		const cached = this.totalWordsCache.get(file.path);
+		if (cached !== undefined) return cached;
 
-		entries
-			.sort((a, b) => a[1].updatedAt - b[1].updatedAt)
-			.slice(0, entries.length - MAX_STORED_POSITIONS)
-			.forEach(([path]) => {
-				delete this.plugin.readingPositions[path];
-			});
+		const totalWords = await getFileReadingUnitsAsync(this.plugin, file);
+		this.totalWordsCache.set(file.path, totalWords);
+		return totalWords;
+	}
+
+	private updateProgressUi(block: HTMLElement | null, container: HTMLElement) {
+		const view = getActiveView(this.plugin);
+		const file = view?.file;
+		if (!file) return;
+
+		void this.updateProgressUiAsync(file, block, container);
+	}
+
+	private async updateProgressUiAsync(
+		file: TFile,
+		block: HTMLElement | null,
+		container: HTMLElement,
+	) {
+		const totalWords = await this.getTotalWords(file);
+		const cachedState = readUserStateFromCache(this.plugin, file);
+		const lineStart = this.getBlockLineStart(block);
+		const view = getActiveView(this.plugin);
+		const totalLines = view?.editor.lineCount() ?? 1;
+		const scrollable = getScrollableElement(container);
+		const scrollRatio = scrollable ? getScrollRatio(scrollable) : 0;
+
+		const patch =
+			lineStart >= 0
+				? buildPositionPatch(lineStart, scrollRatio, totalLines, totalWords)
+				: {};
+
+		const stats = buildReadingStats(
+			{ ...cachedState, ...patch },
+			totalWords,
+			this.plugin.settings.wordsPerMinute,
+		);
+
+		this.statsCache.set(file.path, stats);
+		this.progressBar.update(stats);
+	}
+
+	private updateProgressFromState(file: TFile, state: UserReadingState) {
+		void this.getTotalWords(file).then((totalWords) => {
+			const stats = buildReadingStats(
+				state,
+				totalWords,
+				this.plugin.settings.wordsPerMinute,
+			);
+			this.statsCache.set(file.path, stats);
+			this.progressBar.update(stats);
+		});
+	}
+
+	private refreshProgressForActiveFile() {
+		const view = getActiveView(this.plugin);
+		if (!view?.file || !isReadingView(view)) {
+			this.progressBar.hide();
+			return;
+		}
+		this.refreshProgressForFile(view.file);
+	}
+
+	private refreshProgressForFile(file: TFile) {
+		this.totalWordsCache.delete(file.path);
+		const state = readUserStateFromCache(this.plugin, file);
+		if (state) {
+			this.updateProgressFromState(file, state);
+			return;
+		}
+
+		void this.getTotalWords(file).then((totalWords) => {
+			const stats = buildReadingStats({}, totalWords, this.plugin.settings.wordsPerMinute);
+			this.statsCache.set(file.path, stats);
+			this.progressBar.update(stats);
+		});
+	}
+
+	private async maybeAutoMarkRead(block: HTMLElement, container: HTMLElement) {
+		if (!this.plugin.settings.autoMarkReadAtEnd || this.restoring) return;
+
+		const view = getActiveView(this.plugin);
+		const file = view?.file;
+		if (!file) return;
+
+		const state = readUserStateFromCache(this.plugin, file);
+		if (state?.read) return;
+
+		const blocks = container.querySelectorAll<HTMLElement>(`[${BLOCK_ATTR}=true]`);
+		if (blocks.length === 0) return;
+
+		const lastBlock = blocks[blocks.length - 1];
+		if (block !== lastBlock) return;
+
+		const totalWords = await this.getTotalWords(file);
+		await markAsRead(this.plugin, file, totalWords);
+		this.refreshProgressForFile(file);
+		new Notice(t(this.plugin, "notice.autoMarkedRead"));
 	}
 
 	private findBlockByLine(
@@ -179,10 +379,16 @@ export default class ReadingPositionManager {
 
 		this.boundContainer = container;
 		this.scrollListener = () => {
-			if (!this.plugin.settings.rememberReadingPosition) return;
-			const block =
-				this.plugin.blockSelector.selectionHandler.selectedBlock;
+			if (!this.plugin.settings.rememberReadingPosition) {
+				const block =
+					this.plugin.blockSelector.selectionHandler.selectedBlock;
+				this.updateProgressUi(block, container);
+				return;
+			}
+
+			const block = this.plugin.blockSelector.selectionHandler.selectedBlock;
 			this.queueSave(container, block);
+			this.updateProgressUi(block, container);
 		};
 		container.addEventListener("scroll", this.scrollListener, {
 			passive: true,
@@ -196,6 +402,32 @@ export default class ReadingPositionManager {
 		this.boundContainer = null;
 		this.scrollListener = null;
 	}
+}
+
+export function scrollBlockToCenter(block: HTMLElement): void {
+	const scrollable = getScrollableParent(block);
+	if (!scrollable) {
+		block.scrollIntoView({ block: "center", behavior: "smooth" });
+		return;
+	}
+
+	const blockRect = block.getBoundingClientRect();
+	const scrollableRect = scrollable.getBoundingClientRect();
+	const blockCenter = blockRect.top + blockRect.height / 2;
+	const viewportCenter = scrollableRect.top + scrollableRect.height / 2;
+	scrollable.scrollBy({
+		top: blockCenter - viewportCenter,
+		behavior: "smooth",
+	});
+}
+
+function getScrollableParent(node: HTMLElement): HTMLElement | null {
+	let current: HTMLElement | null = node;
+	while (current) {
+		if (current.scrollHeight > current.clientHeight) return current;
+		current = current.parentElement;
+	}
+	return null;
 }
 
 export function getScrollableElement(

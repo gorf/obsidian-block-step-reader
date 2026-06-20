@@ -3,6 +3,9 @@ import ReadingViewEnhancer from "../main";
 import BlockSelectorSettings from "./block";
 import KeysSettings from "./keys";
 import MiscellaneousSettings from "./miscellaneous";
+import SupportSettings from "./support";
+import type { LocaleSetting } from "../i18n";
+import type { LibraryFilter, LibrarySort } from "../reading-library/types";
 
 export interface RveSettings {
 	blockColor: {
@@ -24,6 +27,16 @@ export interface RveSettings {
 	showRestoreNotice: boolean;
 	readingPositionSaveDelayMs: number;
 	readingPositionRestoreDelayMs: number;
+	userId: string;
+	showReadingProgressBar: boolean;
+	showReadingStats: boolean;
+	autoCenterBlock: boolean;
+	wordsPerMinute: number;
+	autoMarkReadAtEnd: boolean;
+	locale: LocaleSetting;
+	libraryDefaultFilter: LibraryFilter;
+	libraryDefaultSort: LibrarySort;
+	libraryIncludeAllNotes: boolean;
 }
 
 export const DEFAULT_SETTINGS: RveSettings = {
@@ -46,6 +59,16 @@ export const DEFAULT_SETTINGS: RveSettings = {
 	showRestoreNotice: false,
 	readingPositionSaveDelayMs: 500,
 	readingPositionRestoreDelayMs: 300,
+	userId: "default",
+	showReadingProgressBar: true,
+	showReadingStats: true,
+	autoCenterBlock: true,
+	wordsPerMinute: 300,
+	autoMarkReadAtEnd: false,
+	locale: "auto",
+	libraryDefaultFilter: "all",
+	libraryDefaultSort: "updated",
+	libraryIncludeAllNotes: false,
 };
 
 // ===================================================================
@@ -82,5 +105,7 @@ export class RveSettingTab extends PluginSettingTab {
 
 		// Add keys settings
 		new KeysSettings(containerEl, this.plugin);
+
+		new SupportSettings(containerEl, this.plugin);
 	}
 }

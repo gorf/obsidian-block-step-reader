@@ -14,4 +14,4 @@ if (-not (Test-Path (Join-Path $root "main.js"))) {
 New-Item -ItemType Directory -Force -Path $dest | Out-Null
 Copy-Item (Join-Path $root "main.js"), (Join-Path $root "manifest.json") -Destination $dest -Force
 Write-Host "Installed to $dest"
-Write-Host "Reload Obsidian community plugins, then enable Block Step Reader."
+Write-Host "Reload Obsidian community plugins, then enable Block Step Reader (渐读)."

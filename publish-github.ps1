@@ -48,14 +48,14 @@ if ($remotes -notcontains "origin") {
 
 $user = gh api user -q .login
 $repo = "$user/$RepoName"
-$tag = "v0.3.0"
+$tag = "v0.5.0"
 
 gh release view $tag -R $repo *> $null
 if ($LASTEXITCODE -eq 0) {
-    gh release upload $tag main.js manifest.json --clobber -R $repo
+    gh release upload $tag main.js manifest.json versions.json --clobber -R $repo
 } else {
-    gh api "repos/$repo/releases" -X POST -f tag_name=$tag -f name="0.2.1" -f body="Maintenance release with prebuilt main.js for manual install and BRAT." | Out-Null
-    gh release upload $tag main.js manifest.json --clobber -R $repo
+    gh api "repos/$repo/releases" -X POST -f tag_name=$tag -f name="0.5.0" -f body="Reading library, i18n, frontmatter progress, Buy Me a Coffee." | Out-Null
+    gh release upload $tag main.js manifest.json versions.json --clobber -R $repo
 }
 
 Write-Host ""

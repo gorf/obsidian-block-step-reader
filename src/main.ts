@@ -1,4 +1,5 @@
 import { Plugin } from "obsidian";
+import { t } from "./i18n";
 import RveStyles, {
 	BlockColorRule,
 	CollapseIndicatorOnTheRightSideRule,
@@ -9,6 +10,7 @@ import BlockSelector from "./block-selector";
 import ReadingPositionManager, {
 	type ReadingPositionStore,
 } from "./reading-position";
+import { registerReadingLibrary } from "./reading-library";
 
 export default class ReadingViewEnhancer extends Plugin {
 	settings: RveSettings;
@@ -39,6 +41,8 @@ export default class ReadingViewEnhancer extends Plugin {
 		this.readingPosition = new ReadingPositionManager(this);
 		this.readingPosition.activate();
 
+		registerReadingLibrary(this);
+
 		// Register commands
 		new Commands(this).register();
 
@@ -46,7 +50,7 @@ export default class ReadingViewEnhancer extends Plugin {
 		this.addSettingTab(new RveSettingTab(this));
 
 		// Leave a message in the console
-		console.log("Loaded 'Block Step Reader'");
+		console.log(t(this, "plugin.loaded"));
 	}
 
 	/**
@@ -58,7 +62,7 @@ export default class ReadingViewEnhancer extends Plugin {
 		this.styles.cleanup();
 
 		// Leave a message in the console
-		console.log("Unloaded 'Block Step Reader'");
+		console.log(t(this, "plugin.unloaded"));
 	}
 
 	// ===================================================================

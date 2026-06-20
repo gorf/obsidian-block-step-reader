@@ -43,7 +43,7 @@ export default class SelectionHandler {
 	 *
 	 * @param block {HTMLElement} Block element
 	 */
-	select(block: HTMLElement) {
+	select(block: HTMLElement, options?: { center?: boolean }) {
 		block.focus();
 		block.addClass(SELECTED_BLOCK);
 		this.selectedBlock = block;
@@ -51,7 +51,7 @@ export default class SelectionHandler {
 		const view = getActiveView(this.plugin);
 		const container = getReadingViewContainer(view);
 		if (container) {
-			this.plugin.readingPosition.onBlockSelected(block, container);
+			this.plugin.readingPosition.onBlockSelected(block, container, options);
 		}
 	}
 
@@ -166,7 +166,7 @@ export default class SelectionHandler {
 			scrollBottomIntoView(block);
 		} else {
 			const next = findNextBlock(block);
-			if (next) this.select(next as HTMLElement);
+			if (next) this.select(next as HTMLElement, { center: true });
 		}
 	}
 
@@ -180,7 +180,7 @@ export default class SelectionHandler {
 			scrollTopIntoView(block);
 		} else {
 			const prev = findPreviousBlock(block);
-			if (prev) this.select(prev as HTMLElement);
+			if (prev) this.select(prev as HTMLElement, { center: true });
 		}
 	}
 

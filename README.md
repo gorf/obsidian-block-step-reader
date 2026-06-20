@@ -1,13 +1,19 @@
-# Block Step Reader
+# Block Step Reader（渐读）
+
+中文名：**渐读** · 英文名：Block Step Reader
 
 > Fork and continuation of [Galacsh/obsidian-reading-view-enhancer](https://github.com/Galacsh/obsidian-reading-view-enhancer) (upstream unavailable). Original block navigation by Galacsh (MIT). Additional maintenance and reading-position features by [gorf](https://github.com/gorf).
 
-Block Step Reader improves reading in Obsidian's **reading view**:
+Block Step Reader improves reading in Obsidian's **reading view**, with a focus on Reader-like step reading:
 
 - Keyboard block navigation (`J` / `K` or arrow keys)
 - Highlight the current block
-- Remember and restore your last reading position
-- Optional block highlight, collapse controls, and reading-view tweaks from the original plugin
+- Auto-center the current block when moving with the keyboard
+- Reading progress bar and remaining-time estimate
+- **Reading library** sidebar with filters and sorting
+- Mark notes as read / unread
+- Remember and restore reading position **per user in note frontmatter** (shared-vault friendly)
+- **Multi-language UI**: English, 简体中文, 繁體中文
 
 ## Quick start
 
@@ -15,20 +21,85 @@ Block Step Reader improves reading in Obsidian's **reading view**:
 2. Enable **Block Step Reader** in community plugins
 3. Open a note in **reading view**
 4. Turn on **Enable Block Selector** in plugin settings
-5. Use `J` / `↓` for next block, `K` / `↑` for previous block
+5. Set your **User ID** if the vault is shared with others
+6. Click the **library** ribbon icon or run **Open reading library**
+7. Use `J` / `↓` for next block, `K` / `↑` for previous block
 
-## Remember reading position
+## Reading library
 
-Enabled by default. The plugin saves the current block and scroll position while you read, then restores it when you reopen the note.
+Like Readwise Reader's library, the sidebar view supports:
 
-Settings:
+| Filter | Shows |
+|--------|--------|
+| All | All tracked notes |
+| Reading | Started but not finished |
+| Unread | Not started or explicitly unread |
+| Read | Marked as read |
 
-- **Remember reading position**
-- **Show restore notice**
-- **Save delay (ms)**
-- **Restore delay (ms)**
+Sort by:
+
+- Recently updated
+- Progress (low → high / high → low)
+- Title
+- Date finished
+- Time remaining
+
+Click a note to open it in reading view. Use the search box to filter by title or path.
+
+Settings under **Reading experience**:
+
+- **Include all vault notes** — list every markdown file as unread, or only notes with saved progress
+- **Library default filter / sort**
+
+## Shared vaults & frontmatter
+
+Reading progress and read status are stored in each note's frontmatter under `bsr.<userId>`:
+
+```yaml
+---
+bsr:
+  alice:
+    progress: 0.42
+    lineStart: 15
+    scrollRatio: 0.35
+    read: false
+    finished: null
+    totalWords: 3200
+    wordsRead: 1344
+    updatedAt: 1718880000000
+  bob:
+    progress: 1
+    read: true
+    finished: "2026-06-20"
+---
+```
+
+Set **User ID** in plugin settings so each person keeps their own progress in the same note.
+
+## Language
+
+Set **Language** under **Reading experience**:
+
+- **Auto** — follows Obsidian's language
+- **English** — plugin name: Block Step Reader
+- **简体中文** — plugin name: 渐读
+- **繁體中文** — plugin name: 漸讀
+
+## Support
+
+If this plugin helps your reading workflow, consider [buying me a coffee on Ko-fi](https://ko-fi.com/bigmonk).
+
+The same link appears in plugin settings under **Support**, and in Obsidian's plugin directory via `fundingUrl`.
+
+## Publish to the community plugin marketplace
+
+See [PUBLISHING.md](PUBLISHING.md) for the full checklist and submission steps.
 
 ## Install
+
+### Community plugins (after approval)
+
+Search for **Block Step Reader** in Obsidian → Settings → Community plugins.
 
 ### BRAT
 
@@ -56,8 +127,8 @@ Or run:
 
 | Key | Action |
 |-----|--------|
-| `↓` / `J` | Next block |
-| `↑` / `K` | Previous block |
+| `↓` / `J` | Next block (auto-centers when enabled) |
+| `↑` / `K` | Previous block (auto-centers when enabled) |
 | `←` / `→` / `H` / `L` | Toggle collapse |
 | `Escape` | Deselect block |
 

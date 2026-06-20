@@ -1,10 +1,11 @@
 {
 	"id": "block-step-reader",
 	"name": "Block Step Reader",
-	"version": "0.3.0",
+	"version": "0.5.0",
 	"minAppVersion": "1.8.0",
-	"description": "Step through blocks in reading view with keyboard, highlight the current block, and restore your last reading position.",
+	"description": "Reader-like step reading in Obsidian: block navigation, reading library, progress in frontmatter, and multi-language UI.",
 	"author": "gorf",
 	"authorUrl": "https://github.com/gorf",
+	"fundingUrl": "https://ko-fi.com/bigmonk",
 	"isDesktopOnly": false
 }
