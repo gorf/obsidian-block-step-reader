@@ -35,13 +35,15 @@ export function filterEntries(
 ): LibraryEntry[] {
 	switch (filter) {
 		case "reading":
-			return entries.filter((e) => !e.read && e.progress > 0 && e.progress < 1);
+			return entries.filter(
+				(e) => !e.read && e.progress > 0 && e.progress < 1,
+			);
 		case "unread":
 			return entries.filter((e) => !e.read && e.progress === 0);
 		case "read":
 			return entries.filter((e) => e.read);
 		default:
-			return entries;
+			return entries.filter((e) => !e.read);
 	}
 }
 

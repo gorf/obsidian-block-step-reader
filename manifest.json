@@ -1,7 +1,7 @@
 {
 	"id": "block-step-reader",
 	"name": "Block Step Reader",
-	"version": "0.5.0",
+	"version": "0.5.1",
 	"minAppVersion": "1.8.0",
 	"description": "Reader-like step reading in Obsidian: block navigation, reading library, progress in frontmatter, and multi-language UI.",
 	"author": "gorf",

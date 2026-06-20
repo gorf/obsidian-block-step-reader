@@ -27,7 +27,7 @@ const zhCN: Translations = {
 	"library.includeAllNotes": "包含库内全部笔记",
 	"library.includeAllNotesDesc":
 		"开启后，没有阅读记录的笔记会显示为未读；关闭后，仅显示有阅读进度记录的笔记。",
-	"library.filter.all": "全部",
+	"library.filter.all": "待读",
 	"library.filter.reading": "在读",
 	"library.filter.unread": "未读",
 	"library.filter.read": "已读",

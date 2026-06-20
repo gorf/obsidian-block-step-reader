@@ -27,7 +27,7 @@ const zhTW: Translations = {
 	"library.includeAllNotes": "包含庫內全部筆記",
 	"library.includeAllNotesDesc":
 		"開啟後，沒有閱讀記錄的筆記會顯示為未讀；關閉後，僅顯示有閱讀進度記錄的筆記。",
-	"library.filter.all": "全部",
+	"library.filter.all": "待讀",
 	"library.filter.reading": "在讀",
 	"library.filter.unread": "未讀",
 	"library.filter.read": "已讀",

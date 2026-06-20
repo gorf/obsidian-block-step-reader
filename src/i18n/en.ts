@@ -27,7 +27,7 @@ const en: Translations = {
 	"library.includeAllNotes": "Include all vault notes",
 	"library.includeAllNotesDesc":
 		"When enabled, notes without reading data appear as unread. When disabled, only notes with saved progress are listed.",
-	"library.filter.all": "All",
+	"library.filter.all": "To read",
 	"library.filter.reading": "Reading",
 	"library.filter.unread": "Unread",
 	"library.filter.read": "Read",

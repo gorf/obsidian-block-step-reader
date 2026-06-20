@@ -31,10 +31,10 @@ Like Readwise Reader's library, the sidebar view supports:
 
 | Filter | Shows |
 |--------|--------|
-| All | All tracked notes |
-| Reading | Started but not finished |
-| Unread | Not started or explicitly unread |
-| Read | Marked as read |
+| To read / 待读 | Unfinished notes only (excludes marked-as-read) |
+| Reading / 在读 | Started but not finished |
+| Unread / 未读 | Not started or explicitly unread |
+| Read / 已读 | Marked as read |
 
 Sort by:
 

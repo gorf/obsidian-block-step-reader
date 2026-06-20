@@ -48,7 +48,7 @@ if ($remotes -notcontains "origin") {
 
 $user = gh api user -q .login
 $repo = "$user/$RepoName"
-$tag = "v0.5.0"
+$tag = "v0.5.1"
 
 gh release view $tag -R $repo *> $null
 if ($LASTEXITCODE -eq 0) {
