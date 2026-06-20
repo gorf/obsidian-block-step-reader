@@ -41,11 +41,13 @@ $repo = "$user/$RepoName"
 
 git push -u origin $branch 2>$null
 
+$releaseAssets = @("main.js", "manifest.json", "versions.json", "styles.css")
+
 gh release view $tag -R $repo *> $null
 if ($LASTEXITCODE -eq 0) {
-    gh release upload $tag main.js manifest.json versions.json --clobber -R $repo
+    gh release upload $tag @releaseAssets --clobber -R $repo
 } else {
-    gh release create $tag main.js manifest.json versions.json --title $version --notes "Release $version" -R $repo
+    gh release create $tag @releaseAssets --title $version --notes "Release $version" -R $repo
 }
 
 Write-Host ""

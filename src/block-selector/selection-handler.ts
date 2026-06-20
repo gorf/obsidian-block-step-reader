@@ -254,7 +254,7 @@ export default class SelectionHandler {
 
 		// editor instance might not be initialized
 		this.changeMode("source");
-		view.containerEl.style.visibility = "hidden";
+		view.containerEl.addClass("bsr-hide-view");
 
 		if (selectedText.startsWith("==") && selectedText.endsWith("==")) {
 			editor.replaceRange(selectedText.slice(2, -2), startPos, endPos);
@@ -262,9 +262,8 @@ export default class SelectionHandler {
 			editor.replaceRange("==" + selectedText + "==", startPos, endPos);
 		}
 
-		// restore the reading view
 		this.changeMode("preview");
-		view.containerEl.style.visibility = "visible";
+		view.containerEl.removeClass("bsr-hide-view");
 	}
 
 	private changeMode(mode: MarkdownViewModeType) {

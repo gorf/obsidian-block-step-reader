@@ -1,6 +1,7 @@
 import { t, formatRemainingTime } from "src/i18n";
 import ReadingViewEnhancer from "src/main";
 import { formatProgressPercent, type ReadingStats } from "src/reading-state";
+import { setProgressWidth } from "src/styles";
 import { getActiveView, getReadingViewContainer, isReadingView } from "src/utils";
 
 const PROGRESS_BAR_CLASS = "bsr-progress-bar";
@@ -46,7 +47,7 @@ export default class ReadingProgressBar {
 		this.ensureBar();
 		if (!this.fillEl || !this.labelEl) return;
 
-		this.fillEl.style.width = `${Math.round(stats.progress * 100)}%`;
+		setProgressWidth(this.fillEl, stats.progress);
 
 		const parts: string[] = [formatProgressPercent(stats.progress)];
 

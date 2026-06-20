@@ -3,6 +3,7 @@ import { t, formatRemainingTime } from "src/i18n";
 import ReadingViewEnhancer from "src/main";
 import { READING_LIBRARY_VIEW_TYPE } from "src/constants";
 import { queryLibrary } from "./service";
+import { setProgressWidth } from "src/styles";
 import type { LibraryFilter, LibraryQuery, LibrarySort } from "./types";
 
 export default class ReadingLibraryView extends ItemView {
@@ -181,7 +182,7 @@ export default class ReadingLibraryView extends ItemView {
 
 			const track = meta.createDiv({ cls: "bsr-library-item-track" });
 			const fill = track.createDiv({ cls: "bsr-library-item-fill" });
-			fill.style.width = `${Math.round(entry.progress * 100)}%`;
+			setProgressWidth(fill, entry.progress);
 
 			const subtitle = item.createDiv({ cls: "bsr-library-item-subtitle" });
 			subtitle.setText(this.entrySubtitle(entry));
