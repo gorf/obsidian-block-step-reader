@@ -60,6 +60,10 @@ export default class SelectionHandler {
 	 * @param block {HTMLElement} Block element
 	 */
 	select(block: HTMLElement, options?: { center?: boolean }) {
+		if (this.selectedBlock && this.selectedBlock !== block) {
+			this.selectedBlock.removeClass(SELECTED_BLOCK);
+		}
+
 		block.focus();
 		block.addClass(SELECTED_BLOCK);
 		this.selectedBlock = block;
@@ -79,6 +83,7 @@ export default class SelectionHandler {
 		if (this.selectedBlock) {
 			this.selectedBlock.removeClass(SELECTED_BLOCK);
 			this.selectedBlock.blur();
+			this.selectedBlock = null;
 		}
 	}
 

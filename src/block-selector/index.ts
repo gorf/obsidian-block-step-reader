@@ -21,7 +21,16 @@ export default class BlockSelector {
 		this.blockify(element, context);
 	};
 
-	private readonly onLayoutOrLeafChange = (): void => {
+	private readonly onActiveLeafChange = (): void => {
+		this.selectionHandler.deselect();
+		this.plugin.readingPosition.resetReadingSession();
+		this.autoSelectTopBlock();
+	};
+
+	private readonly onLayoutChange = (): void => {
+		if (this.plugin.readingPosition.hasActiveReadingSelection()) {
+			return;
+		}
 		this.autoSelectTopBlock();
 	};
 
@@ -33,12 +42,12 @@ export default class BlockSelector {
 	activate(): void {
 		this.plugin.registerMarkdownPostProcessor(this.blockifyProcessor);
 		this.plugin.registerEvent(
-			this.plugin.app.workspace.on("layout-change", this.onLayoutOrLeafChange),
+			this.plugin.app.workspace.on("layout-change", this.onLayoutChange),
 		);
 		this.plugin.registerEvent(
 			this.plugin.app.workspace.on(
 				"active-leaf-change",
-				this.onLayoutOrLeafChange,
+				this.onActiveLeafChange,
 			),
 		);
 	}

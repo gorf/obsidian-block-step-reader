@@ -1,6 +1,6 @@
 {
 	"name": "block-step-reader",
-	"version": "0.5.6",
+	"version": "0.5.7",
 	"description": "Step through blocks in reading view, highlight the current block, and remember reading position.",
 	"main": "main.js",
 	"scripts": {

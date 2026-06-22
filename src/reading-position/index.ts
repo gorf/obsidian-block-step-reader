@@ -21,12 +21,15 @@ import type { ReadingPosition, ReadingPositionStore } from "./types";
 export default class ReadingPositionManager {
 	private plugin: ReadingViewEnhancer;
 	private saveTimer: number | null = null;
+	private saveGeneration = 0;
+	private suppressSaveUntil = 0;
 	private scrollListener: ((event: Event) => void) | null = null;
 	private boundContainer: HTMLElement | null = null;
 	private progressBar: ReadingProgressBar;
 	private statsCache = new Map<string, ReadingStats>();
 	private totalWordsCache = new Map<string, number>();
 	private restoring = false;
+	private sessionFilePath: string | null = null;
 
 	constructor(plugin: ReadingViewEnhancer) {
 		this.plugin = plugin;
@@ -64,7 +67,17 @@ export default class ReadingPositionManager {
 			scrollBlockToCenter(block);
 		}
 
+		const view = getActiveView(this.plugin);
+		if (view?.file) {
+			this.sessionFilePath = view.file.path;
+		}
+
 		if (!this.plugin.settings.rememberReadingPosition) {
+			this.updateProgressUi(block, container);
+			return;
+		}
+
+		if (this.shouldSuppressSave()) {
 			this.updateProgressUi(block, container);
 			return;
 		}
@@ -72,6 +85,22 @@ export default class ReadingPositionManager {
 		this.queueSave(container, block);
 		this.updateProgressUi(block, container);
 		void this.maybeAutoMarkRead(block, container);
+	}
+
+	resetReadingSession(): void {
+		this.sessionFilePath = null;
+		this.cancelPendingSave();
+	}
+
+	hasActiveReadingSelection(): boolean {
+		const view = getActiveView(this.plugin);
+		if (!view?.file || !isReadingView(view)) return false;
+
+		const container = getReadingViewContainer(view);
+		const block = this.plugin.blockSelector.selectionHandler.selectedBlock;
+		if (!block || !container) return false;
+
+		return container.contains(block);
 	}
 
 	tryRestore(
@@ -88,6 +117,7 @@ export default class ReadingPositionManager {
 		if (!state) return false;
 
 		this.restoring = true;
+		this.cancelPendingSave();
 
 		const block = this.findBlockByLine(container, state.lineStart);
 		if (block) {
@@ -98,6 +128,8 @@ export default class ReadingPositionManager {
 		}
 
 		this.restoring = false;
+		this.suppressSaveUntil = Date.now() + 800;
+		this.sessionFilePath = file.path;
 		this.updateProgressFromState(file, state);
 
 		if (this.plugin.settings.showRestoreNotice) {
@@ -186,31 +218,55 @@ export default class ReadingPositionManager {
 	}
 
 	private queueSave(container: HTMLElement, block: HTMLElement | null) {
+		if (this.shouldSuppressSave()) return;
+
 		if (this.saveTimer) window.clearTimeout(this.saveTimer);
 
+		const generation = ++this.saveGeneration;
 		this.saveTimer = window.setTimeout(() => {
-			void this.flushSave(container, block);
+			this.saveTimer = null;
+			void this.flushSave(container, block, generation);
 		}, this.plugin.settings.readingPositionSaveDelayMs);
+	}
+
+	private cancelPendingSave(): void {
+		if (this.saveTimer) {
+			window.clearTimeout(this.saveTimer);
+			this.saveTimer = null;
+		}
+		this.saveGeneration++;
+	}
+
+	private shouldSuppressSave(): boolean {
+		return this.restoring || Date.now() < this.suppressSaveUntil;
 	}
 
 	private async flushSave(
 		container: HTMLElement,
 		block: HTMLElement | null,
+		generation: number,
 	) {
+		if (generation !== this.saveGeneration) return;
+
 		const view = getActiveView(this.plugin);
 		const file = view?.file;
 		if (!file) return;
 
 		const currentBlock =
 			this.plugin.blockSelector.selectionHandler.selectedBlock ?? block;
-		await this.persistPosition(file, container, currentBlock);
+		await this.persistPosition(file, container, currentBlock, generation);
 	}
 
 	private async persistPosition(
 		file: TFile,
 		container: HTMLElement,
 		block: HTMLElement | null,
+		generation?: number,
 	) {
+		if (generation !== undefined && generation !== this.saveGeneration) {
+			return;
+		}
+
 		const lineStart = this.getBlockLineStart(block);
 		if (lineStart < 0) return;
 
@@ -298,6 +354,16 @@ export default class ReadingPositionManager {
 			this.progressBar.hide();
 			return;
 		}
+
+		if (this.hasActiveReadingSelection()) {
+			const container = getReadingViewContainer(view);
+			const block = this.plugin.blockSelector.selectionHandler.selectedBlock;
+			if (container && block) {
+				this.updateProgressUi(block, container);
+				return;
+			}
+		}
+
 		this.refreshProgressForFile(view.file);
 	}
 
@@ -379,6 +445,8 @@ export default class ReadingPositionManager {
 
 		this.boundContainer = container;
 		this.scrollListener = () => {
+			if (this.shouldSuppressSave()) return;
+
 			if (!this.plugin.settings.rememberReadingPosition) {
 				const block =
 					this.plugin.blockSelector.selectionHandler.selectedBlock;
