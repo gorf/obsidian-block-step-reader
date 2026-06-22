@@ -7,6 +7,7 @@ import {
 import { MarkdownView, Platform } from "obsidian";
 import { t } from "src/i18n";
 import { activateReadingLibrary } from "src/reading-library";
+import { runSyncAllReadTagsCommand } from "src/reading-state";
 import type { RveCommand } from ".";
 
 export const rerenderAllReadingViews: RveCommand = (
@@ -160,6 +161,14 @@ export const focusReadingLibrary: RveCommand = (plugin: ReadingViewEnhancer) => 
 	name: t(plugin, "cmd.focusLibrary"),
 	callback: () => {
 		void activateReadingLibrary(plugin);
+	},
+});
+
+export const syncReadTags: RveCommand = (plugin: ReadingViewEnhancer) => ({
+	id: "sync-read-tags",
+	name: t(plugin, "cmd.syncReadTags"),
+	callback: () => {
+		void runSyncAllReadTagsCommand(plugin);
 	},
 });
 

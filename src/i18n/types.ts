@@ -22,6 +22,7 @@ export interface Translations {
 	"notice.markedUnread": string;
 	"notice.clearedLegacy": string;
 	"notice.autoMarkedRead": string;
+	"notice.readTagsSynced": string;
 	"library.title": string;
 	"library.openRibbon": string;
 	"library.empty": string;
@@ -50,6 +51,7 @@ export interface Translations {
 	"cmd.toggleHighlight": string;
 	"cmd.openLibrary": string;
 	"cmd.focusLibrary": string;
+	"cmd.syncReadTags": string;
 	"settings.blockSelector": string;
 	"settings.miscellaneous": string;
 	"settings.keys": string;
@@ -87,6 +89,10 @@ export interface Translations {
 	"settings.libraryDefaultFilterDesc": string;
 	"settings.libraryDefaultSort": string;
 	"settings.libraryDefaultSortDesc": string;
+	"settings.syncReadTags": string;
+	"settings.syncReadTagsDesc": string;
+	"settings.syncReadTagsNow": string;
+	"settings.syncReadTagsNowDesc": string;
 }
 
 export type TranslationKey = keyof Translations;

@@ -6,6 +6,7 @@ import {
 	type UserReadingState,
 } from "./types";
 import { computeProgressFromLine, countReadingUnits } from "./stats";
+import { applyReadTagToFrontmatter } from "./read-tags";
 
 export function getUserId(plugin: ReadingViewEnhancer): string {
 	const id = plugin.settings.userId.trim();
@@ -48,8 +49,13 @@ export async function writeUserState(
 
 		const userRaw = bsr[userId];
 		const current = normalizeUserState(isRecord(userRaw) ? userRaw : {});
-		bsr[userId] = { ...current, ...patch, updatedAt: Date.now() };
+		const merged = { ...current, ...patch, updatedAt: Date.now() };
+		bsr[userId] = merged;
 		frontmatter[BSR_FRONTMATTER_KEY] = bsr;
+
+		if (plugin.settings.syncReadTags) {
+			applyReadTagToFrontmatter(frontmatter, userId, merged.read);
+		}
 	});
 }
 

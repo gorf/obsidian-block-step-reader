@@ -20,6 +20,7 @@ const zhTW: Translations = {
 	"notice.markedUnread": "已標記為未讀",
 	"notice.clearedLegacy": "已清除本機舊版閱讀位置快取（frontmatter 中的記錄不受影響）",
 	"notice.autoMarkedRead": "已讀至文末，自動標記為已讀",
+	"notice.readTagsSynced": "已同步 {{count}} 條筆記的已讀標籤。",
 	"library.title": "閱讀庫",
 	"library.openRibbon": "開啟閱讀庫",
 	"library.empty": "沒有符合篩選條件的筆記。",
@@ -49,6 +50,7 @@ const zhTW: Translations = {
 	"cmd.toggleHighlight": "切換段落高亮",
 	"cmd.openLibrary": "開啟閱讀庫",
 	"cmd.focusLibrary": "聚焦閱讀庫",
+	"cmd.syncReadTags": "為全部筆記同步已讀標籤",
 	"settings.blockSelector": "段落選擇",
 	"settings.miscellaneous": "其他",
 	"settings.keys": "快捷鍵",
@@ -88,6 +90,12 @@ const zhTW: Translations = {
 	"settings.libraryDefaultFilterDesc": "開啟閱讀庫時預設顯示的分頁。",
 	"settings.libraryDefaultSort": "閱讀庫預設排序",
 	"settings.libraryDefaultSortDesc": "閱讀庫中的預設排序方式。",
+	"settings.syncReadTags": "同步已讀標籤",
+	"settings.syncReadTagsDesc":
+		"標記已讀/未讀時，在 frontmatter 中添加或移除標籤 #{{tag}}。在 Improved Random Note 中可將該標籤填入「Exclude tags」。",
+	"settings.syncReadTagsNow": "立即同步",
+	"settings.syncReadTagsNowDesc":
+		"根據目前使用者 ID 的 BSR 已讀狀態，為庫內所有筆記補全或移除已讀標籤。",
 };
 
 export default zhTW;

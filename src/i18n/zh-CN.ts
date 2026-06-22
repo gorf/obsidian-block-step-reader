@@ -20,6 +20,7 @@ const zhCN: Translations = {
 	"notice.markedUnread": "已标记为未读",
 	"notice.clearedLegacy": "已清除本地旧版阅读位置缓存（frontmatter 中的记录不受影响）",
 	"notice.autoMarkedRead": "已读至文末，自动标记为已读",
+	"notice.readTagsSynced": "已同步 {{count}} 条笔记的已读标签。",
 	"library.title": "阅读库",
 	"library.openRibbon": "打开阅读库",
 	"library.empty": "没有符合筛选条件的笔记。",
@@ -49,6 +50,7 @@ const zhCN: Translations = {
 	"cmd.toggleHighlight": "切换段落高亮",
 	"cmd.openLibrary": "打开阅读库",
 	"cmd.focusLibrary": "聚焦阅读库",
+	"cmd.syncReadTags": "为全部笔记同步已读标签",
 	"settings.blockSelector": "段落选择",
 	"settings.miscellaneous": "其他",
 	"settings.keys": "快捷键",
@@ -88,6 +90,12 @@ const zhCN: Translations = {
 	"settings.libraryDefaultFilterDesc": "打开阅读库时默认显示的标签页。",
 	"settings.libraryDefaultSort": "阅读库默认排序",
 	"settings.libraryDefaultSortDesc": "阅读库中的默认排序方式。",
+	"settings.syncReadTags": "同步已读标签",
+	"settings.syncReadTagsDesc":
+		"标记已读/未读时，在 frontmatter 中添加或移除标签 #{{tag}}。在 Improved Random Note 中可将该标签填入「Exclude tags」。",
+	"settings.syncReadTagsNow": "立即同步",
+	"settings.syncReadTagsNowDesc":
+		"根据当前用户 ID 的 BSR 已读状态，为库内所有笔记补全或移除已读标签。",
 };
 
 export default zhCN;

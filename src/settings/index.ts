@@ -37,6 +37,7 @@ export interface RveSettings {
 	libraryDefaultFilter: LibraryFilter;
 	libraryDefaultSort: LibrarySort;
 	libraryIncludeAllNotes: boolean;
+	syncReadTags: boolean;
 }
 
 export const DEFAULT_SETTINGS: RveSettings = {
@@ -69,6 +70,7 @@ export const DEFAULT_SETTINGS: RveSettings = {
 	libraryDefaultFilter: "all",
 	libraryDefaultSort: "updated",
 	libraryIncludeAllNotes: false,
+	syncReadTags: true,
 };
 
 // ===================================================================

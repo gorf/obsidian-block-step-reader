@@ -3,6 +3,7 @@ import { t } from "src/i18n";
 import ReadingViewEnhancer from "src/main";
 import type { LocaleSetting } from "src/i18n";
 import type { LibraryFilter, LibrarySort } from "src/reading-library/types";
+import { buildReadTag, getUserId, runSyncAllReadTagsCommand } from "src/reading-state";
 
 export default class ReadingExperienceSettings {
 	constructor(settingsTabEl: HTMLElement, plugin: ReadingViewEnhancer) {
@@ -97,6 +98,27 @@ export default class ReadingExperienceSettings {
 					.onChange(async (value) => {
 						plugin.settings.autoMarkReadAtEnd = value;
 						await plugin.saveSettings();
+					});
+			});
+
+		const readTag = buildReadTag(getUserId(plugin));
+		new Setting(settingsTabEl)
+			.setName(t(plugin, "settings.syncReadTags"))
+			.setDesc(
+				t(plugin, "settings.syncReadTagsDesc", { tag: readTag }),
+			)
+			.addToggle((toggle) => {
+				toggle.setValue(plugin.settings.syncReadTags).onChange(async (value) => {
+					plugin.settings.syncReadTags = value;
+					await plugin.saveSettings();
+				});
+			})
+			.addButton((button) => {
+				button
+					.setButtonText(t(plugin, "settings.syncReadTagsNow"))
+					.setTooltip(t(plugin, "settings.syncReadTagsNowDesc"))
+					.onClick(() => {
+						void runSyncAllReadTagsCommand(plugin);
 					});
 			});
 

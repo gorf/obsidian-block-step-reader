@@ -20,6 +20,7 @@ const en: Translations = {
 	"notice.markedUnread": "Marked as unread",
 	"notice.clearedLegacy": "Cleared legacy local position cache (frontmatter records kept)",
 	"notice.autoMarkedRead": "Reached the end — marked as read",
+	"notice.readTagsSynced": "Synced read tags on {{count}} note(s).",
 	"library.title": "Reading library",
 	"library.openRibbon": "Open reading library",
 	"library.empty": "No notes match this filter.",
@@ -49,6 +50,7 @@ const en: Translations = {
 	"cmd.toggleHighlight": "Toggle block highlight",
 	"cmd.openLibrary": "Open reading library",
 	"cmd.focusLibrary": "Focus reading library",
+	"cmd.syncReadTags": "Sync read tags for all notes",
 	"settings.blockSelector": "Block selector",
 	"settings.miscellaneous": "Miscellaneous",
 	"settings.keys": "Keyboard shortcuts",
@@ -92,6 +94,12 @@ const en: Translations = {
 	"settings.libraryDefaultFilterDesc": "Default tab when opening the reading library.",
 	"settings.libraryDefaultSort": "Library default sort",
 	"settings.libraryDefaultSortDesc": "Default sort order in the reading library.",
+	"settings.syncReadTags": "Sync read tags",
+	"settings.syncReadTagsDesc":
+		"When marked read/unread, add or remove frontmatter tag #{{tag}}. In Improved Random Note, add this tag under Exclude tags.",
+	"settings.syncReadTagsNow": "Sync now",
+	"settings.syncReadTagsNowDesc":
+		"Add or remove read tags on all notes based on saved BSR state for your User ID.",
 };
 
 export default en;
